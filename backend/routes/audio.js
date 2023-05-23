@@ -2,6 +2,14 @@ const express = require('express');
 const multer = require('multer');
 const { MongoClient } = require("mongodb");
 const fs = require('fs');
+const Tone = require("tone");
+const math = require("mathjs");
+const soxPath = require('sox-bin');
+const { exec } = require('child_process');
+const ffmpeg = require("fluent-ffmpeg");
+const { PythonShell } = require('python-shell');
+const path = require('path');
+
 const router = express.Router();
 
 const audio = multer({
@@ -10,6 +18,33 @@ const audio = multer({
   },
   dest: '/var/www/uploads'
 });
+
+
+
+
+// Function to check audio plagiarism using a Python script
+function checkAudioPlagiarism(originalAudioPath, plagiarizedAudioPath) {
+  return new Promise((resolve, reject) => {
+    const options = {
+      scriptPath: 'D:\\Aaikyam-Backend\\backend\\',
+      args: [originalAudioPath, plagiarizedAudioPath],
+    };
+    console.log("hello")
+    PythonShell.run('audio_plagiarism.py', options, (err, results) => {
+      console.log("hello")
+      if (err) {
+        reject(err);
+      } else {
+        const similarity = parseFloat(results[0]);
+        resolve(similarity);
+        console.log("hello")
+      }
+    });
+  });
+}
+
+
+
 
 router.post('/upload', audio.single('audioFile'), async function(req, res, next) {
   try {
@@ -38,7 +73,6 @@ router.post('/upload', audio.single('audioFile'), async function(req, res, next)
       return;
     }
 
-    console.log("Format valid");
 
     fs.readFile(file.path, async function(err, data) {
       if (err) {
@@ -52,11 +86,21 @@ router.post('/upload', audio.single('audioFile'), async function(req, res, next)
         const audioFileCollection = database.collection('audio_file');
         const doc = {
           filename: file.originalname,
+          folder_file_name: file.filename,
           contentType: file.mimetype,
           audioData: data
         };
         const result = await audioFileCollection.insertOne(doc);
         console.log(`A document was inserted with the _id: ${result.insertedId}`);
+
+        // Perform plagiarism check for each stored audio
+        const storedAudios = await audioFileCollection.find().toArray();
+
+        for (const storedAudio of storedAudios) {
+          const storedAudioPath = '/var/www/uploads/' + storedAudio.folder_file_name;
+          const similarity = await checkAudioPlagiarism(storedAudioPath, file.path);
+          console.log(`Plagiarism similarity with ${storedAudio.filename}: ${similarity}`);
+        }
       }
     });
 
