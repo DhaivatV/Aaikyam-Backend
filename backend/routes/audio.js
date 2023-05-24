@@ -97,6 +97,12 @@ router.post('/upload', audio.single('audioFile'), async function(req, res, next)
           storedAudioDataArray.push(storedAudio.audioData);
         }
 
+      if (storedAudioDataArray.length==0){
+        await audioFileCollection.insertOne(doc);
+          console.log("unique audio file added to db")
+          res.send("File uploaded successfully");
+      }
+      else{
         const audio_data = {
           original_audio: storedAudioDataArray,
           plagiarized_audio: buffer_str
@@ -109,17 +115,21 @@ router.post('/upload', audio.single('audioFile'), async function(req, res, next)
           const plagiarizedFileCollection = database.collection('plagiarized_file');
           plagiarizedFileCollection.insertOne(doc);
           console.log("plagiarized audio file");
+          res.send("Plagiarized File detected");
         }
         else{
           await audioFileCollection.insertOne(doc);
           console.log("unique audio file added to db")
+          res.send("File uploaded successfully");
         }
 
+      }
+        
         
         }
       });
   
-      res.send("File upload in progress");
+      
     } catch (err) {
       next(err);
     }
