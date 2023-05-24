@@ -22,22 +22,23 @@ function calculateAudioSimilarity(audioData) {
   // Construct the request body
   const requestBody = audioData;
 
-  // Send the POST request
-  axios
-    .post(url, requestBody, {
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    })
-    .then(async response => {
-      // Handle the response data
-      const similarityScore = await response.data;
-      return similarityScore;
-    })
-    .catch(error => {
-      console.error('Error:', error);
-      // Handle the error
-    });
+  // Return a promise that resolves with the similarity score
+  return new Promise((resolve, reject) => {
+    axios
+      .post(url, requestBody, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+      .then(response => {
+        // Resolve the promise with the similarity score
+        resolve(response.data);
+      })
+      .catch(error => {
+        // Reject the promise with the error
+        reject(error);
+      });
+  });
 }
 
 
@@ -101,10 +102,20 @@ router.post('/upload', audio.single('audioFile'), async function(req, res, next)
           plagiarized_audio: buffer_str
         }
 
-        const similarity_score = calculateAudioSimilarity(audio_data)
-        console.log(similarity_score)
+        const similarity_score = Object.values(await calculateAudioSimilarity(audio_data));
+        const value  = similarity_score[0];
 
-          
+        if (value>0.8){
+          const plagiarizedFileCollection = database.collection('plagiarized_file');
+          plagiarizedFileCollection.insertOne(doc);
+          console.log("plagiarized audio file");
+        }
+        else{
+          await audioFileCollection.insertOne(doc);
+          console.log("unique audio file added to db")
+        }
+
+        
         }
       });
   
