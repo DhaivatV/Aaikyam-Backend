@@ -16,7 +16,7 @@ const audio = multer({
 
 
 function calculateAudioSimilarity(audioData) {
-  const url = 'http://127.0.0.1:5000/audio_similarity';
+  const url = 'http://127.0.0.1:8000/audio_similarity';
 
   // Construct the request body
   const requestBody = audioData;

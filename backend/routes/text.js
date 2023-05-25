@@ -81,7 +81,7 @@ router.post('/upload', async function(req, res){
                 }
                 
                 await pLyricsFileCollection.insertOne(doc);
-                res.send("Plagiarized Audio File");
+                res.send("Plagiarized lyrics ");
 
             }
             else{
