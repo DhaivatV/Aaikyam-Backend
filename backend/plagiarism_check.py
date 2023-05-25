@@ -5,6 +5,8 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 import base64
 import io
+from cdifflib import CSequenceMatcher
+import string
 
 app = Flask(__name__)
 CORS(app)
@@ -36,8 +38,33 @@ def calculate_audio_similarity():
         if similarity[0][0]>0.8:
             res[original_audio_arr.index(originalAudio)]=int(similarity[0][0])
 
-    print(res)
     return jsonify(res)
+
+@app.route('/text_similarity', methods=['POST'])
+def check_plagiarism():
+    # Get the JSON data from the request
+    data = request.get_json()
+    
+    # Extract the text data from the JSON
+    original_text = data['original_text']
+    suspicious_text = data['suspicious_text']
+    
+    res={}
+    # Clean the text by removing punctuation and converting to lowercase
+    for text in original_text:
+        translator = str.maketrans('', '', string.punctuation)
+        original_text_clean = text.translate(translator).lower()
+        suspicious_text_clean = suspicious_text.translate(translator).lower()
+        
+        # Calculate the similarity ratio using SequenceMatcher
+        similarity_ratio = CSequenceMatcher(None, original_text_clean, suspicious_text_clean).ratio()
+    
+        if similarity_ratio>0.8:
+            res['isPlagiarized']=True
+            break
+    # Return the result as a JSON response
+    return jsonify(res)
+
         
 if __name__ == '__main__':
     app.run(port=8000)
