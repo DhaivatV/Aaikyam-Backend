@@ -5,7 +5,7 @@ const axios = require('axios');
 const router = express.Router();
 
 function calculateTextSimilarity(lyricsData) {
-    const url = 'http://127.0.0.1:8000/text_similarity';
+    const url = 'http://13.127.219.110:8080/text_similarity';
   
     // Construct the request body
     const requestBody = lyricsData;

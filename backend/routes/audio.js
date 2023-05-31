@@ -13,7 +13,7 @@ const audio = multer({
 });
 
 function calculateAudioSimilarity(audioData) {
-  const url = 'http://127.0.0.1:8000/audio_similarity';
+  const url = 'http://13.127.219.110:8080/audio_similarity';
 
   // Construct the request body
   const requestBody = audioData;
@@ -65,6 +65,7 @@ router.post('/upload', audio.single('audioFile'), async function(req, res, next)
     }
 
     const audioData = req.file.buffer;
+    // console.log(audioData.toString('base64'))
     const uri = "mongodb+srv://dv:dv123@aaikyam.pehbz3m.mongodb.net/?retryWrites=true&w=majority";
     const client = new MongoClient(uri);
     await client.connect();
