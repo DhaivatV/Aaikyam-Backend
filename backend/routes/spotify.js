@@ -68,11 +68,11 @@ function getSpotifyUserData(access_token) {
     });
 }
 
-router.get('/spotify', function(req, res) {
+router.get('/login', function(req, res) {
   var state = generateRandomString(16);
   var scope = 'user-read-private user-read-email';
   var client_id = '9f88e8b17d2c46f9955efef314895ebe'; // Replace with your Spotify client ID
-  var redirect_uri = 'http://localhost:3000/tp/login/callback';
+  var redirect_uri = 'http://localhost:3000/spotify/callback';
 
   res.redirect('https://accounts.spotify.com/authorize?' +
     querystring.stringify({
@@ -87,7 +87,7 @@ router.get('/spotify', function(req, res) {
 router.get('/callback', function(req, res) {
     var client_id = '9f88e8b17d2c46f9955efef314895ebe';
     var client_secret = '5f0ebcba43f443be80b50a8d9dbc8b6d';
-    var redirect_uri = 'http://localhost:3000/tp/login/callback';
+    var redirect_uri = 'http://localhost:3000/spotify/callback';
     var code = req.query.code || null;
     var state = req.query.state || null;
   
