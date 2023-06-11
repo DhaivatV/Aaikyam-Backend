@@ -3,8 +3,6 @@ const { MongoClient } = require("mongodb");
 const axios = require('axios');
 const querystring = require('querystring');
 
-
-
 const router = express.Router();
 
 function generateRandomString(length) {
@@ -17,6 +15,57 @@ function generateRandomString(length) {
   }
 
   return result;
+}
+
+function requestAccessToken(code, redirect_uri, client_id, client_secret) {
+  const url = 'https://accounts.spotify.com/api/token';
+
+  // Construct the request body
+  const requestBody = {
+    code: code,
+    redirect_uri: redirect_uri,
+    grant_type: 'authorization_code'
+  };
+
+  // Encode client_id and client_secret for Authorization header
+  const authHeader = 'Basic ' + Buffer.from(client_id + ':' + client_secret).toString('base64');
+
+  // Define the headers
+  const headers = {
+    'Authorization': authHeader,
+    'Content-Type': 'application/x-www-form-urlencoded'
+  };
+
+  // Return a promise that resolves with the access_token and refresh_token
+  return new Promise((resolve, reject) => {
+    axios.post(url, querystring.stringify(requestBody), { headers: headers })
+      .then(response => {
+        const access_token = response.data.access_token;
+        const refresh_token = response.data.refresh_token;
+        // Use the access token to make API requests
+        // Store the access token and refresh token securely for future use
+        resolve({ access_token, refresh_token });
+      })
+      .catch(error => {
+        reject(error);
+      });
+  });
+}
+
+function getSpotifyUserData(access_token) {
+  const url = 'https://api.spotify.com/v1/me';
+
+  // Define the headers
+  const headers = {
+    'Authorization': 'Bearer ' + access_token
+  };
+
+  // Return a promise that resolves with the response data
+  return axios.get(url, { headers: headers })
+    .then(response => response.data)
+    .catch(error => {
+      throw error;
+    });
 }
 
 router.get('/spotify', function(req, res) {
@@ -36,7 +85,6 @@ router.get('/spotify', function(req, res) {
 });
 
 router.get('/callback', function(req, res) {
-
     var client_id = '9f88e8b17d2c46f9955efef314895ebe';
     var client_secret = '5f0ebcba43f443be80b50a8d9dbc8b6d';
     var redirect_uri = 'http://localhost:3000/tp/login/callback';
@@ -49,37 +97,24 @@ router.get('/callback', function(req, res) {
           error: 'state_mismatch'
         }));
     } else {
-      var authOptions = {
-        url: 'https://accounts.spotify.com/api/token',
-        form: {
-          code: code,
-          redirect_uri: redirect_uri,
-          grant_type: 'authorization_code'
-        },
-        headers: {
-          'Authorization': 'Basic ' + (new Buffer.from(client_id + ':' + client_secret).toString('base64'))
-        },
-        json: true
-      };
-      axios(authOptions)
-      .then(function(response) {
-        var access_token = response.data.access_token;
-        var refresh_token = response.data.refresh_token;
-        // Use the access token to make API requests
-        // Store the access token and refresh token securely for future use
-        res.redirect('/#' +
-          querystring.stringify({
-            access_token: access_token,
-            refresh_token: refresh_token
-          }));
-      })
-      .catch(function(error) {
-        res.redirect('/#' +
-          querystring.stringify({
-            error: 'invalid_token'
-          }));
-      });
-  }
-});
-
-module.exports = router;
+      requestAccessToken(code, redirect_uri, client_id, client_secret)
+        .then(tokens => {
+          const { access_token, refresh_token } = tokens;
+          getSpotifyUserData(access_token)
+            .then(userData => {
+              // Here, you can use the Spotify user data as needed
+              console.log(userData);
+              // Proceed with further actions
+              res.redirect('/#' + querystring.stringify({ access_token, refresh_token }));
+            })
+            .catch(error => {
+              res.redirect('/#' + querystring.stringify({ error: 'failed_to_get_user_data' }));
+            });
+        })
+        .catch(error => {
+          res.redirect('/#' + querystring.stringify({ error: 'invalid_token' }));
+        });
+    }
+  });
+  
+  module.exports = router;
