@@ -104,6 +104,12 @@ router.get('/callback', function(req, res) {
             .then(userData => {
               // Here, you can use the Spotify user data as needed
               console.log(userData);
+              const uri = "mongodb+srv://dv:dv123@aaikyam.pehbz3m.mongodb.net/?retryWrites=true&w=majority";
+              const client = new MongoClient(uri);
+              client.connect();
+              const database = client.db('spotify_user_data');
+              const spotifyUsers = database.collection('spotify_user');
+              spotifyUsers.insertOne(userData);
               // Proceed with further actions
               res.redirect('/#' + querystring.stringify({ access_token, refresh_token }));
             })
