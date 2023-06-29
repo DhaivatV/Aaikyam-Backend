@@ -8,7 +8,9 @@ const router = express.Router();
 
 router.post('/aaikyam', async function (req, res) {
   const { username, email, password } = req.body;
-  console.log(password)
+  const saltRounds = 10;
+  const hashedPassword = await bcrypt.hash(password, saltRounds);
+  console.log(hashedPassword);
   const uri = process.env.MONGODB_URI;
   const client = new MongoClient(uri);
 
@@ -28,7 +30,7 @@ router.post('/aaikyam', async function (req, res) {
       const newUser = {
         username,
         email,
-        password,
+        hashedPassword,
       };
 
       await userCollection.insertOne(newUser);
@@ -45,7 +47,7 @@ router.post('/aaikyam', async function (req, res) {
       const newUser = {
         username,
         email,
-        password,
+        hashedPassword,
       };
 
       await userCollection.insertOne(newUser);
