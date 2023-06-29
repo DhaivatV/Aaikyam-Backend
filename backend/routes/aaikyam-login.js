@@ -1,5 +1,7 @@
-var express = require('express');
-var router = express.Router();
+const express = require('express');
+const { MongoClient } = require("mongodb");
+const axios = require('axios');var router = express.Router();
+const bcrypt = require('bcryptjs');
 
 /* GET users listing. */
 // router.get('/get', function(req, res, next) {
@@ -29,4 +31,11 @@ router.post("/login", async (req, res) => {
 });
 
 
+=======
+
+router.post('/login', function(req, res){
+    const {login_id, password}= req.body;
+
+
+})
 module.exports = router;
