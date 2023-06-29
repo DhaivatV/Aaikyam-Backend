@@ -2,6 +2,8 @@ const express = require('express');
 const { MongoClient } = require("mongodb");
 const axios = require('axios');
 
+require('dotenv').config({path:'.env'});
+
 const router = express.Router();
 
 function calculateTextSimilarity(lyricsData) {
@@ -33,7 +35,7 @@ router.post('/upload', async function(req, res){
 
     const {lyrics, title, author, genre} = req.body;
     console.log({lyrics, title, author, genre});
-    const uri = "mongodb+srv://dv:dv123@aaikyam.pehbz3m.mongodb.net/?retryWrites=true&w=majority";
+    const uri = process.env.MONGODB_URI;
     const client = new MongoClient(uri);
     await client.connect();
 
