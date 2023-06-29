@@ -31,7 +31,6 @@ router.post("/login", async (req, res) => {
 });
 
 
-=======
 
 router.post('/login', function(req, res){
     const {login_id, password}= req.body;
