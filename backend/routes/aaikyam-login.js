@@ -4,7 +4,7 @@ const bcrypt = require('bcrypt');
 
 const router = express.Router();
 
-router.post('/login', async (req, res) => {
+router.post('/aaikyam', async function (req, res) {
   const { username, password } = req.body;
 
   if (!username || !password) {
