@@ -2,6 +2,7 @@ const express = require('express');
 const { MongoClient } = require("mongodb");
 const axios = require('axios');
 const querystring = require('querystring');
+require('dotenv').config({path:'.env'});
 
 const router = express.Router();
 
@@ -71,7 +72,7 @@ function getSpotifyUserData(access_token) {
 router.get('/login', function(req, res) {
   var state = generateRandomString(16);
   var scope = 'user-read-private user-read-email';
-  var client_id = '9f88e8b17d2c46f9955efef314895ebe'; // Replace with your Spotify client ID
+  var client_id =process.env.spotify_client_id; // Replace with your Spotify client ID
   var redirect_uri = 'http://localhost:3000/spotify/callback';
 
   res.redirect('https://accounts.spotify.com/authorize?' +
@@ -85,8 +86,8 @@ router.get('/login', function(req, res) {
 });
 
 router.get('/callback', function(req, res) {
-    var client_id = '9f88e8b17d2c46f9955efef314895ebe';
-    var client_secret = '5f0ebcba43f443be80b50a8d9dbc8b6d';
+    var client_id = process.env.spotify_client_id;
+    var client_secret = process.env.spotify_client_secret;
     var redirect_uri = 'http://localhost:3000/spotify/callback';
     var code = req.query.code || null;
     var state = req.query.state || null;
@@ -104,6 +105,12 @@ router.get('/callback', function(req, res) {
             .then(userData => {
               // Here, you can use the Spotify user data as needed
               console.log(userData);
+              const uri = process.env.MONGODB_URI;
+              const client = new MongoClient(uri);
+              client.connect();
+              const database = client.db('spotify_user_data');
+              const spotifyUsers = database.collection('spotify_user');
+              spotifyUsers.insertOne(userData);
               // Proceed with further actions
               res.redirect('/#' + querystring.stringify({ access_token, refresh_token }));
             })
@@ -111,7 +118,7 @@ router.get('/callback', function(req, res) {
               res.redirect('/#' + querystring.stringify({ error: 'failed_to_get_user_data' }));
             });
         })
-        .catch(error => {
+                .catch(error => {
           res.redirect('/#' + querystring.stringify({ error: 'invalid_token' }));
         });
     }

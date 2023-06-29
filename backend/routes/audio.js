@@ -4,6 +4,7 @@ const { MongoClient } = require("mongodb");
 const fs = require('fs');
 const axios = require('axios');
 const path = require('path');
+require('dotenv').config({path:'.env'});
 
 const router = express.Router();
 const audio = multer({
@@ -66,7 +67,7 @@ router.post('/upload', audio.single('audioFile'), async function(req, res, next)
 
     const audioData = req.file.buffer;
     // console.log(audioData.toString('base64'))
-    const uri = "mongodb+srv://dv:dv123@aaikyam.pehbz3m.mongodb.net/?retryWrites=true&w=majority";
+    const uri = process.env.MONGODB_URI;
     const client = new MongoClient(uri);
     await client.connect();
     const database = client.db('audio_data');
