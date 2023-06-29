@@ -1,40 +1,46 @@
 const express = require('express');
-const { MongoClient } = require("mongodb");
-const axios = require('axios');var router = express.Router();
-const bcrypt = require('bcryptjs');
+const { MongoClient } = require('mongodb');
+const bcrypt = require('bcrypt');
 
-/* GET users listing. */
-// router.get('/get', function(req, res, next) {
-//   res.send('respond with a resource');
-// });
-router.post("/login", async (req, res) => {
+const router = express.Router();
+
+router.post('/login', async (req, res) => {
   const { username, password } = req.body;
 
-  if(!username || !password) {
-    return res.status(400).json({ error: "Missing required fields"});
+  if (!username || !password) {
+    return res.status(400).json({ error: 'Missing required fields' });
   }
 
-  //const db = DB();
-  //const usersCollection = db.collection("users");
+  const uri = process.env.MONGODB_URI;
+  const client = new MongoClient(uri);
 
-  const user = await usersCollection.findOne({ username });
+  try {
+    await client.connect();
+    const database = client.db('aaikyam_signup_users');
+    const userCollection = database.collection('user_data');
 
-  if(!user) {
-    return res.status(401).json({error : "Invalid username or password"});
+    const user = await userCollection.findOne({ username });
+    console.log(user);
+
+    if (!user) {
+      return res.status(401).json({ error: 'Invalid username or password' });
+    }
+
+
+    const passwordMatch = await bcrypt.compare(password, user.hashedPassword);
+
+
+    if (!passwordMatch) {
+      return res.status(401).json({ error: 'Invalid username or password' });
+    }
+
+    return res.status(200).json({ message: 'Login successful' });
+  } catch (error) {
+    console.error('Error:', error);
+    return res.status(500).json({ error: 'Internal Server Error' });
+  } finally {
+    await client.close();
   }
-
-  if(user.password !== password){
-    return res.status(401).json({error : "Invalid username or password"});
-  }
-
-  return res.status(200).json({ message : "Login succuessful"});
 });
 
-
-
-router.post('/login', function(req, res){
-    const {login_id, password}= req.body;
-
-
-})
 module.exports = router;
