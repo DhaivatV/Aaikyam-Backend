@@ -1,5 +1,6 @@
 const express = require('express');
 const { MongoClient } = require("mongodb");
+const bcrypt = require('bcrypt');
 
 require('dotenv').config({path:'.env'});
 
@@ -7,6 +8,7 @@ const router = express.Router();
 
 router.post('/aaikyam', async function (req, res) {
   const { username, email, password } = req.body;
+  console.log(password)
   const uri = process.env.MONGODB_URI;
   const client = new MongoClient(uri);
 
