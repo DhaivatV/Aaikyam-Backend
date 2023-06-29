@@ -9,6 +9,7 @@ var usersRouter = require('./routes/users');
 var audioRouter = require('./routes/audio');
 var textRouter = require('./routes/text');
 var spotifyRouter = require('./routes/spotify');
+var signupRouter = require('./routes/aaikyam-signup');
 
 var app = express();
 
@@ -27,6 +28,7 @@ app.use('/users', usersRouter);
 app.use('/audio', audioRouter);
 app.use('/text', textRouter);
 app.use('/spotify', spotifyRouter);
+app.use('/signup', signupRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

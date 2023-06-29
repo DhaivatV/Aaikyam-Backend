@@ -1,11 +1,13 @@
 const express = require('express');
 const { MongoClient } = require("mongodb");
 
+require('dotenv').config({path:'.env'});
+
 const router = express.Router();
 
 router.post('/aaikyam', async function (req, res) {
   const { username, email, password } = req.body;
-  const uri = "mongodb+srv://dv:dv123@aaikyam.pehbz3m.mongodb.net/?retryWrites=true&w=majority";
+  const uri = process.env.MONGODB_URI;
   const client = new MongoClient(uri);
 
   try {
