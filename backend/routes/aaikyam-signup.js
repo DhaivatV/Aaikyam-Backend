@@ -1,31 +1,59 @@
 const express = require('express');
 const { MongoClient } = require("mongodb");
-const users = [];
 
-app.use(express.json());
 
-app.post('/signup', (req, res) => {
+const router = express.Router();
+
+
+const uri = "mongodb+srv://dv:dv123@aaikyam.pehbz3m.mongodb.net/?retryWrites=true&w=majority";
+const client = new MongoClient(uri);
+client.connect();
+const database = client.db('aaikyam_signup_users');
+const userCollection = database.collection('user_data');
+
+const users = userCollection.find().toArray();
+    
+
+
+router.post('/aaikyam', (req, res) => {
   const { username, email, password } = req.body;
 
   if (!username || !email || !password) {
     return res.status(400).json({ error: 'Missing required fields' });
   }
 
+
+  if (users.length ==0)
+  {
+    const newUser = {
+      username,
+      email,
+      password
+    };
+
+    userCollection.insertOne(newUser);
+    return res.status(409).json({ error: 'New User Added' })
+  }
+
   if (users.some(user => user.username === username || user.email === email)) {
     return res.status(409).json({ error: 'Username or email already exists' });
   }
 
-  const newUser = {
-    username,
-    email,
-    password
-  };
+  else{
+    const newUser = {
+      username,
+      email,
+      password
+    };
 
-  users.push(newUser);
+    userCollection.insertOne(newUser);
+    return res.status(409).json({ error: 'New User Added' })
+  }
 
-  return res.status(201).json({ message: 'User registered successfully' });
+  
+
+
 });
    
-app.listen(3000, () => {
-  console.log('Server is running on port 3000');
-});
+
+module.exports = router;
