@@ -117,7 +117,7 @@ router.get('/callback', function(req, res) {
               res.redirect('/#' + querystring.stringify({ error: 'failed_to_get_user_data' }));
             });
         })
-        .catch(error => {
+                .catch(error => {
           res.redirect('/#' + querystring.stringify({ error: 'invalid_token' }));
         });
     }
