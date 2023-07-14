@@ -89,7 +89,7 @@ router.get('/login', function(req, res) {
 router.get('/callback', function(req, res) {
     var client_id = process.env.spotify_client_id;
     var client_secret = process.env.spotify_client_secret;
-    var redirect_uri = 'http://localhost:3000/spotify/callback';
+    var redirect_uri = 'https://aaikyam-backend.onrender.com/spotify/callback';
     var code = req.query.code || null;
     var state = req.query.state || null;
   
