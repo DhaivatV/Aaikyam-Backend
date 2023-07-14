@@ -74,7 +74,7 @@ router.get('/login', function(req, res) {
   var state = generateRandomString(16);
   var scope = 'user-read-private user-read-email';
   var client_id =process.env.spotify_client_id; // Replace with your Spotify client ID
-  var redirect_uri = 'http://localhost:3000/spotify/callback';
+  var redirect_uri = 'https://aaikyam-backend.onrender.com/spotify/callback';
 
   res.redirect('https://accounts.spotify.com/authorize?' +
     querystring.stringify({
