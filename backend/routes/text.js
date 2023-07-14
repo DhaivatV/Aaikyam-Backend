@@ -1,13 +1,19 @@
 const express = require('express');
 const { MongoClient } = require("mongodb");
 const axios = require('axios');
+const multer = require('multer');
 
 require('dotenv').config({path:'.env'});
 
 const router = express.Router();
+const image = multer({
+  limits: {
+    fileSize: 10 * 1024 * 1024 // 10MB
+  }
+});
 
 function calculateTextSimilarity(lyricsData) {
-    const url = 'http://13.127.219.110:8080/text_similarity';
+    const url = 'http://127.0.0.1:8000/text_similarity';
   
     // Construct the request body
     const requestBody = lyricsData;
@@ -31,10 +37,22 @@ function calculateTextSimilarity(lyricsData) {
     });
   }
 
-router.post('/upload', async function(req, res){
+router.post('/upload', image.single('thumbnail') ,async function(req, res){
 
     const {lyrics, title, author, genre} = req.body;
-    console.log({lyrics, title, author, genre});
+    const thumbnail = req.file;
+
+    if (!thumbnail) {
+      res.send({"Error":"Thumbnail not added"});
+    }
+
+    if (!thumbnail.mimetype.startsWith('image/')) {
+      res.send({"Error":"Invalid Thumbnail"});
+      return;
+    }
+   
+    const thumbnailData = req.file.buffer;
+
     const uri = process.env.MONGODB_URI;
     const client = new MongoClient(uri);
     await client.connect();
@@ -49,7 +67,8 @@ router.post('/upload', async function(req, res){
                 Title: title,
                 Author: author,
                 Genre: genre,
-                Lyrics: lyrics 
+                Lyrics: lyrics,
+                Thumbnail: thumbnailData.toString('base64')
             }
 
             await lyricsFileCollection.insertOne(doc);
@@ -79,7 +98,8 @@ router.post('/upload', async function(req, res){
                     Title: title,
                     Author: author,
                     Genre: genre,
-                    Lyrics: lyrics 
+                    Lyrics: lyrics,
+                    Thumbnail: thumbnailData.toString('base64')
                 }
                 
                 await pLyricsFileCollection.insertOne(doc);
@@ -91,7 +111,8 @@ router.post('/upload', async function(req, res){
                     Title: title,
                     Author: author,
                     Genre: genre,
-                    Lyrics: lyrics 
+                    Lyrics: lyrics,
+                    Thumbnail: thumbnailData.toString('base64')
                 }
     
                 await lyricsFileCollection.insertOne(doc);

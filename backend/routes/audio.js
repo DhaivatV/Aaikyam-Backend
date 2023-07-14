@@ -13,8 +13,14 @@ const audio = multer({
   }
 });
 
+const image = multer({
+  limits: {
+    fileSize: 10 * 1024 * 1024 // 10MB
+  }
+});
+
 function calculateAudioSimilarity(audioData) {
-  const url = 'http://13.127.219.110:8080/audio_similarity';
+  const url = 'http://127.0.0.1:8000/audio_similarity';
 
   // Construct the request body
   const requestBody = audioData;
@@ -38,7 +44,7 @@ function calculateAudioSimilarity(audioData) {
   });
 }
 
-router.post('/upload', audio.single('audioFile'), async function(req, res, next) {
+router.post('/upload', audio.single('audioFile'), image.single('thumbnail'),  async function(req, res, next) {
   try {
     // Check if the request is a POST request.
     if (req.method !== 'POST') {
@@ -48,6 +54,8 @@ router.post('/upload', audio.single('audioFile'), async function(req, res, next)
 
     // Get the audio file from the request body.
     const file = req.file;
+    console.log("hello");
+    const thumbnailFile = req.file;
 
     // Check if the file is valid.
     if (!file) {
